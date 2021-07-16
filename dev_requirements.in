@@ -1,7 +1,6 @@
 coverage
-hypothesis
+hypothesis<5
+more-itertools<6
+packaging<21
+pytest<5
 pytest-cov
-
-# Pinned because of a bug in py.test that's firing on Python 3.5:
-# https://github.com/pytest-dev/pytest/issues/3742
-pytest<3.7
