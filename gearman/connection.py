@@ -198,7 +198,7 @@ class GearmanConnection(object):
                 recv_buffer += self.gearman_socket.recv(remaining)
                 remaining = self.gearman_socket.pending()
 
-        self._incoming_buffer.fromstring(recv_buffer)
+        compat.array_from_bytes(self._incoming_buffer, recv_buffer)
         return len(self._incoming_buffer)
 
     def _unpack_command(self, given_buffer):
