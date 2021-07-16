@@ -6,6 +6,8 @@ from gearman import connection, compat
 from gearman.errors import ConnectionError, ServerUnavailable
 from gearman.protocol import GEARMAN_COMMAND_TEXT_COMMAND, GEARMAN_COMMAND_ECHO_REQ
 
+from tests._core_testing import random_bytes
+
 
 def test_no_host_is_ServerUnavailable():
     with pytest.raises(ServerUnavailable):
@@ -57,3 +59,20 @@ def test_send_commands_to_buffer():
         assert isinstance(conn._outgoing_buffer, compat.binary_type)
     else:
         assert isinstance(conn._outgoing_buffer, compat.binary_type)
+
+
+def test_read_data_from_socket(monkeypatch):
+    conn = connection.GearmanConnection(host='localhost')
+    b = random_bytes()
+
+    class MockSocket(object):
+        def recv(self, bytes_to_read):
+            return b
+
+    def create_mock_socket():
+        conn.gearman_socket = MockSocket()
+
+    with monkeypatch.context() as m:
+        m.setattr(conn, "_create_client_socket", create_mock_socket)
+        conn.connect()
+    assert conn.read_data_from_socket() == len(b)
