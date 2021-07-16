@@ -13,6 +13,9 @@ if PY3:
     def array_to_bytes(arr):
         return arr.tobytes()
 
+    def array_from_bytes(arr, s):
+        arr.frombytes(s)
+
     def itervalues(d):
         return d.values()
 
@@ -25,6 +28,9 @@ else:
 
     def array_to_bytes(arr):
         return arr.tostring()
+
+    def array_from_bytes(arr, s):
+        arr.fromstring(s)
 
     def itervalues(d):
         return d.itervalues()
