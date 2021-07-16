@@ -17,3 +17,4 @@ build
 deploy_key
 .tox
 *.egg-info
+.hypothesis

@@ -19,7 +19,7 @@ You can install it using pip:
 
    pip install gearman3
 
-The library is tested with Python 2.7, 3.5 and 3.6.
+The library is tested with Python 2.7 and 3.5-3.9.
 
 
 Usage
