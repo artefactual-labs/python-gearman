@@ -5,21 +5,17 @@ This is a Gearman API written in Python -- client, worker and admin client inter
 
 For information about Gearman and a C-based Gearman server, see `<http://gearman.org/>`_.
 
-This is a fork of the original `Yelp/python-gearman <https://github.com/Yelp/python-gearman>`_ project, which adds support for Python 3.
+This is a fork of the original `Yelp/python-gearman <https://github.com/Yelp/python-gearman>`_ project.
+The `Wellcome Collection <https://github.com/wellcomecollection/python-gearman>`_ previously forked that project to add Python 3 support; that repository has since been archived.
+We forked the Wellcome Collection repository so we could continue maintenance and apply bugfixes as needed.
 You can use this library if you have an existing project that uses python-gearman and you want to upgrade to Python 3, but you probably shouldn't use it for a new project.
-
 
 Installation
 ************
 
-This library is published on PyPI as `gearman3 <https://pypi.org/project/gearman3/>`_.
-You can install it using pip:
+This library is not published on PyPI yet.
 
-.. code-block::
-
-   pip install gearman3
-
-The library is tested with Python 2.7 and 3.5-3.9.
+The library is tested with Python 3.9 and newer.
 
 
 Usage
@@ -32,12 +28,12 @@ There are docs at `<https://pythonhosted.org/gearman/>`_.
 Development
 ***********
 
-I created this fork so we'd have a Python 3-compatible version of Gearman to use in `Archivematica <https://github.com/artefactual/archivematica>`_.
+We created this fork so we'd have a Python 3-compatible version of Gearman to use in `Archivematica <https://github.com/artefactual/archivematica>`_.
 
-I'll accept bugfixes for improving compatibility with Python 3, but I'm unlikely to accept new features or changes to the library's behaviour.
-If you want to make big changes, I suggest creating your own fork.
+We'll accept bugfixes for improving compatibility with Python 3 and for increasing overall stability, but we're unlikely to accept new features or changes to the library's behaviour.
+If you want to make big changes, we suggest creating your own fork.
 
-New patches should come with tests and a release note.
+New patches should come with tests.
 
 See `<developers.rst>`_ for more notes on development, and in particular instructions for creating pull requests.
 
