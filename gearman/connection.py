@@ -31,6 +31,15 @@ class GearmanConnection(object):
     """
     connect_cooldown_seconds = 1.0
 
+    # These options are disabled by default to preserve the transport behavior
+    # of existing users.  Applications can configure them on a subclass and
+    # install that subclass through GearmanConnectionManager.connection_class.
+    connect_timeout = None
+    keepalive = False
+    keepalive_idle = None
+    keepalive_interval = None
+    keepalive_count = None
+
     def __init__(self, host=None, port=DEFAULT_GEARMAN_PORT, keyfile=None, certfile=None, ca_certs=None):
         port = port or DEFAULT_GEARMAN_PORT
         self.gearman_host = host
@@ -115,10 +124,45 @@ class GearmanConnection(object):
         self._is_client_side = True
         self._is_server_side = False
 
+    def _set_keepalive_options(self, client_socket):
+        """Configure TCP keepalive on a newly created client socket."""
+        if not self.keepalive:
+            return
+
+        client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+
+        # Linux exposes TCP_KEEPIDLE while macOS uses TCP_KEEPALIVE for the
+        # equivalent setting.  Unsupported optional settings are left to the
+        # platform defaults.
+        idle_option = getattr(socket, 'TCP_KEEPIDLE', None)
+        if idle_option is None:
+            idle_option = getattr(socket, 'TCP_KEEPALIVE', None)
+
+        keepalive_options = (
+            (idle_option, self.keepalive_idle),
+            (getattr(socket, 'TCP_KEEPINTVL', None), self.keepalive_interval),
+            (getattr(socket, 'TCP_KEEPCNT', None), self.keepalive_count),
+        )
+        for option, value in keepalive_options:
+            if option is not None and value is not None:
+                client_socket.setsockopt(socket.IPPROTO_TCP, option, value)
+
+    def _create_socket_connection(self):
+        """Create a TCP socket, resolving the configured hostname each time."""
+        address = (self.gearman_host, self.gearman_port)
+        if self.connect_timeout is None:
+            return socket.create_connection(address)
+        return socket.create_connection(address, timeout=self.connect_timeout)
+
     def _create_client_socket(self):
-        """Creates a client side socket and subsequently binds/configures our socket options"""
+        """Create and configure a client-side socket."""
+        client_socket = None
         try:
-            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            # socket.create_connection resolves the hostname on every call and
+            # tries each address returned by getaddrinfo.  This allows a new
+            # connection to follow a service hostname to a replacement server.
+            client_socket = self._create_socket_connection()
+            self._set_keepalive_options(client_socket)
 
             if self.use_ssl:
                 client_socket = ssl.wrap_socket(client_socket,
@@ -128,11 +172,11 @@ class GearmanConnection(object):
                                                 cert_reqs=ssl.CERT_REQUIRED,
                                                 ssl_version=ssl.PROTOCOL_TLSv1)
 
-            client_socket.connect((self.gearman_host, self.gearman_port))
+            self.set_socket(client_socket)
         except socket.error as socket_exception:
+            if client_socket is not None:
+                client_socket.close()
             self.throw_exception(exception=socket_exception)
-
-        self.set_socket(client_socket)
 
     def set_socket(self, current_socket):
         """Setup common options for all Gearman-related sockets"""
